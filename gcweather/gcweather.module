@@ -54,7 +54,7 @@ function gcweather_init() {
 	gcweather_settings('cities', gcweather_get_cities());
 	
 	// drupal_get_messages('status');
-	
+	 
 }
 
 function gcweather_form($form, &$form_state) {
