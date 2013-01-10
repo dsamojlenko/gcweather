@@ -1,0 +1,300 @@
+<?php
+
+module_load_include('inc', 'gcweather', 'gcweather_cache');
+
+/**
+ * Implements hook_block_info().
+ */
+function gcweather_block_info() {
+	$blocks['gcweather'] = array (
+		'info' => t('Weather'),
+		'cache' => DRUPAL_NO_CACHE,
+	);
+	return $blocks;
+}
+
+function gcweather_settings($key, $value = NULL) {
+	$storage = &drupal_static(__FUNCTION__, NULL);
+	
+	if(isset($value)) {
+		$storage[$key] = $value;
+	}
+	
+	return $storage[$key];
+}
+
+function gcweather_location_set($value) {
+	// validate format
+	user_cookie_save(array('gcweather_location_code' => $value));
+	gcweather_settings('location_code', $value);
+}
+
+function gcweather_location_get() {
+	if(isset($_COOKIE['Drupal_visitor_gcweather_location_code'])) {
+		// validate format or return default
+		return $_COOKIE['Drupal_visitor_gcweather_location_code'];
+	} else {
+		return gcweather_settings('default_location');
+	}
+}
+
+function gcweather_init() {
+	global $language;
+	$lang = "e";
+	if($language->language == 'fr') {
+		$lang = "f";
+	}
+	
+	gcweather_settings('default_location','ON,s0000430');
+	gcweather_settings('cities_list_file','siteList.xml');
+	gcweather_settings('lang',$lang);
+	gcweather_settings('location_code',gcweather_location_get());
+	gcweather_settings('cache_path', 'public://gcweather_cache/');
+	gcweather_settings('provinces', gcweather_get_provinces());
+	gcweather_settings('cities', gcweather_get_cities());
+	
+	// drupal_get_messages('status');
+	
+}
+
+function gcweather_form($form, &$form_state) {
+	$province_list = _gcweather_get_provinces_options();
+	
+	$selected = isset($form_state['values']['select_province']) ? $form_state['values']['select_province'] : key($province_list);
+	
+	$form['select_province'] = array(
+		'#type' => 'select',
+		'#title' => 'Province',
+		'#options' => $province_list,
+		'#default_value' => $selected,
+		'#ajax' => array(
+			'callback' => 'gcweather_province_callback',
+			'wrapper' => 'cities-select-replace',
+		),
+	);
+	
+	$form['select_city'] = array(
+		'#type' => 'select',
+		'#title' => $province_list[$selected] . ' ' . t('City'),
+		'#prefix' => '<div id="cities-select-replace">',
+		'#suffix' => '</div>',
+		'#options' => _gcweather_get_cities_options($selected),
+		'#default_value' => isset($form_state['values']['select_city']) ? $form_state['values']['select_city'] : '',
+	);
+	
+	$form['submit'] = array(
+ 		'#type' => 'submit',
+ 		'#value' => t('Submit'),
+ 		'#ajax' => array(
+			'callback' => 'gcweather_ajax_callback',
+			'wrapper' => 'gcweather-widget'
+		),
+ 	);
+	
+	/*	
+	$form = array();
+  
+	$cities = array(
+		'ON,s0000430' => 'Ottawa',
+		'ON,s0000531' => 'Kingston'
+	);
+  
+	$form['gcweather_select'] = array(
+  		'#title' => t('City'),
+  		'#type' => 'select',
+  		'#default_value' => gcweather_settings('location_code'),
+  		'#options' => $cities,
+  		'#description' => 'Select a City or search below',
+  		'#ajax' => array(
+  			'event' => 'change',
+  			'callback' => 'gcweather_ajax_callback',
+  			'wrapper' => 'gcweather-widget'
+		),
+	);
+	 * 
+	 */
+    
+	/*
+	$form['search_city'] = array(
+		'#title' => t('City'),
+		'#type' => 'textfield',
+		'#autocomplete_path' => 'gcweather/cities',
+		'#attributes' => array('class' => array('auto_submit')),
+		
+	);
+	 * 
+	 */
+	//'#ajax' => array(
+			
+			//'callback' => 'gcweather_ajax_callback',
+			//'wrapper' => 'gcweather-widget'
+		//),
+	
+	/*
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => 'Submit',
+		'#ajax' => array(
+			'callback' => 'gcweather_ajax_callback',
+			'wrapper' => 'gcweather-widget'
+		),
+	);
+	 
+	 */
+  
+	return $form;
+}
+
+function gcweather_province_callback($form, $form_state) {
+	return $form['select_city'];
+}
+
+function gcweather_get_provinces() {
+	$cities_xml = gcweather_get_cities_file();
+	
+	$provinces = array_unique($cities_xml->xpath("/siteList/site/provinceCode"));
+	
+	$aprovinces = array();
+	foreach($provinces as $province) {
+		$aprovinces[(string)$province] = (string) $province;
+	}
+	
+	return $aprovinces;
+}
+
+function gcweather_get_cities() {
+	$cities_xml = gcweather_get_cities_file();	
+		
+	$provinces = array_unique($cities_xml->xpath("/siteList/site/provinceCode"));
+	
+	$aprovinces = array();
+	
+	foreach($provinces as $province) {
+
+		$cities = $cities_xml->xpath("/siteList/site[contains(provinceCode,'$province')]");
+		$acities = array();
+		$aprovinces[(string) $province] = array();
+		foreach($cities as $city) {
+			// array_push($aprovinces[(string) $province], array((string) $city->attributes()->code => (string) $city->nameEn));
+			$aprovinces[(string) $province][(string) $city->attributes()->code] = (string) $city->nameEn; 
+		}
+		asort($aprovinces[(string) $province]);
+	}
+	
+	return $aprovinces;
+}
+
+function _gcweather_get_provinces_options() {
+  // drupal_map_assoc() just makes an array('String' => 'String'...).
+  return gcweather_settings('provinces');
+}
+
+function _gcweather_get_cities_options($key = '') {
+  $options = gcweather_settings('cities');
+  
+  if (isset($options[$key])) {
+    return $options[$key];
+  }
+  else {
+    return array();
+  }
+}
+
+
+function gcweather_menu() {
+	$items['gcweather/cities'] = array(
+		'page callback' => '_gcweather_autocomplete',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK
+	);
+	return $items;
+}
+
+function _gcweather_autocomplete($string) {
+	$cities_xml = gcweather_get_cities_file();
+	
+	$upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	$lower = "abcdefghijklmnopqrstuvwxyz";
+	
+	$matches = array();
+	
+	if(gcweather_settings('lang') == 'e') {
+		$name = 'nameEn';
+	} else {
+		$name = 'nameFr';
+	}
+	
+	$cities_search = $cities_xml->xpath("/siteList/site[contains(translate($name, '$upper', '$lower'),translate(\"$string\",'$upper','$lower'))]");
+	
+	foreach($cities_search AS $city) {
+		$matches[$city[0]->provinceCode . ',' . $city[0]->attributes()->code] = (string) $city[0]->$name;
+	}
+	
+	drupal_json_output($matches);
+}
+
+function gcweather_ajax_callback($form, $form_state) {
+	// $city = $form_state['triggering_element']['#value'];
+	$province = $form_state['values']['select_province'];
+	$city = $form_state['values']['select_city'];
+	// dpm($city);
+	// drupal_static_reset('gcweather_settings');
+	gcweather_location_set($province . ',' . $city);
+	
+	return gcweather_contents();
+}
+
+function gcweather_contents() {
+	// dpm(gcweather_settings('location_code'));
+		
+	$content = "";
+	
+	$weather_xml = gcweather_get_weather_file();
+	
+	$content = "<div id=\"gcweather-widget\">";
+	
+	// $xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/$province/$citycode" . "_" . "$lang.xml");
+	$current = $weather_xml->currentConditions;
+	// $tmpatt = $current->temperature->attributes();
+	$forecasts = $weather_xml->forecastGroup;
+	$content .= "<p>";
+	$content .= "<strong>" . $weather_xml->location->region . "</strong><br>";
+	$content .= t("Current Conditions") . "<br>";
+	
+	$content .= $current->condition . "<br>";
+	
+	$content .= "Temperature: " . $current->temperature . "&deg;" . $current->temperature->attributes()->units . "<br>"; // $tmpatt["units"] . "<br>";
+	$content .= "iconCode: " . $current->iconCode;
+	$content .= "</p>";
+	foreach($forecasts->forecast as $forecast) {
+		$content .= "<p>";
+		$content .= "<strong>" . $forecast->period . "</strong><br>";
+		$content .= $forecast->abbreviatedForecast->textSummary ."<br>";
+		foreach($forecast->temperatures->temperature as $temperature) {
+			$content .= $temperature->attributes()->class . " ";
+			$content .= $temperature . "&deg;" . $temperature->attributes()->units . "<br>";
+		}
+		$content .= "iconCode: " . $forecast->abbreviatedForecast->iconCode;
+		$content .= "</p>";
+	}
+	$content .= "</div>";
+	
+	return $content;
+}
+
+function gcweather_block_view($delta = '') {
+	drupal_add_js(drupal_get_path('module', 'gcweather') .'/js/gcweather.js');
+	
+	switch($delta){
+		case 'gcweather':
+			$block['subject'] = t('Current Weather');
+			if(user_access('access content')) {
+				$form = drupal_get_form('gcweather_form');
+				$block['content'] = drupal_render($form);	
+				$block['content'] .= gcweather_contents();
+			}
+			
+	}
+	return $block;
+}
+

@@ -1,0 +1,27 @@
+<?php
+
+function gcweather_install() {
+	$cache_path = 'public://gcweather_cache';
+	$sitelist_path = 'http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/siteList.xml';
+	
+	// create the directory or display an error
+	if(!file_exists($cache_path)) {
+		if (!file_prepare_directory($cache_path, FILE_CREATE_DIRECTORY)) {
+			dpm('Error creating the cache directory');
+		}
+	}
+
+	// get siteList
+	$sitelist = drupal_http_request($sitelist_path);
+	$sitelist_xml = $sitelist->data;
+	
+	file_put_contents($cache_path . '/siteList.xml', $sitelist_xml);
+	
+}
+
+/**
+ * Implement hook_uninstall().
+ */
+function gcweather_uninstall() {
+	// should probably delete cache folder	
+}
