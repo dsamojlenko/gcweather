@@ -278,7 +278,7 @@ function gcweather_contents() {
 		$content .= "</li>";
 	}
 	$content .= "</ul></div>";
-	<?php jcarousel_add('weathercarousel'); ?>
+	jcarousel_add('weathercarousel');
 	return $content;
 }
 
