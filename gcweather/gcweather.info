@@ -4,4 +4,3 @@ core = 7.x
 files[] = gcweather.module
 files[] = gcweather.install
 files[] = gcweather_cache.inc
-
