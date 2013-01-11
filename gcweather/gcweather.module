@@ -258,7 +258,7 @@ function gcweather_contents() {
 	// $tmpatt = $current->temperature->attributes();
 	$forecasts = $weather_xml->forecastGroup;
 	$content .= "<ul class='weathercarousel jcarousel-skin-frontPage'><li>";
-	$content .= "<strong>" . $weather_xml->location->region . "</strong><br>";
+	$content .= "<img alt='" . $current->condition . "' src='/sites/all/modules/gcweather/weathericons/" . $current->iconCode . ".gif' /><strong>" . $weather_xml->location->region . "</strong><br>";
 	$content .= t("Current Conditions") . "<br>";
 	
 	$content .= $current->condition . "<br>";
