@@ -6,8 +6,20 @@ function gcweather_get_remote_file($feed) {
 			$xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/" . gcweather_settings('cities_list_file'));
 			break;
 		case 'weather':
+			
 			$location = explode(",",gcweather_settings('location_code'));
-			$xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/" . $location[0] . "/" . $location[1] . "_" . gcweather_settings('lang') . ".xml");
+			
+			if($xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/" . $location[0] . "/" . $location[1] . "_" . gcweather_settings('lang') . ".xml")) {
+				return $xml;
+			} else {
+			
+				$location = explode(",",gcweather_settings('default_location'));
+				if($xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/" . $location[0] . "/" . $location[1] . "_" . gcweather_settings('lang') . ".xml")) {
+					return $xml;
+				} else {
+					return false;
+				}
+			}
 			break;
 		default:
 			return false;
@@ -26,7 +38,7 @@ function gcweather_get_cities_file() {
 }
 
 function gcweather_get_weather_file() {	
-		
+	
 	if($xml = gcweather_check_file_cache('weather')) {
 		return $xml;
 	} else {

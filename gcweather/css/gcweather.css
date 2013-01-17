@@ -1,0 +1,50 @@
+/* Weather Widget */
+#gcweather-widget {
+}
+#gcweather-widget .container {
+	width: 95%;
+	margin: 0px auto;
+}
+#gcweather-widget ul {
+	display: block;
+	padding-left: 0px;
+}
+#gcweather-widget li {
+	list-style: none;	
+}
+#gcweather-widget li span {
+	text-align: left;
+}
+#gcweather-widget li img {
+	height: 66px;
+	width: 80px;
+	float: right;
+}
+
+
+/* Bottom */
+#gcweather-widget .navigation {
+	display: block;
+	clear: both;
+	width: 100%;
+}
+#gcweather-widget .navigation a {	
+	text-decoration: none;
+	color: #000000;
+}
+#gcweather-widget .prev {
+	width: 49%;
+	text-align: center;
+	height: 19px;
+	border: 1px solid #9E9E9E;
+	background-image: url('button.jpg');
+	float: left;
+}
+#gcweather-widget .next {
+	width: 49%;
+	text-align: center;
+	height: 19px;
+	border: 1px solid #9E9E9E;
+	background-image: url('button.jpg');
+	float: right;
+}
