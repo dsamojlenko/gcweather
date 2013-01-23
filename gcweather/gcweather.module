@@ -1,7 +1,7 @@
 <?php
 
 module_load_include('inc', 'gcweather', 'gcweather_cache');
-
+global $language;
 /**
  * Implements hook_block_info().
  */
@@ -77,7 +77,7 @@ function gcweather_form($form, &$form_state) {
 	
 	$form['select_city'] = array(
 		'#type' => 'select',
-		'#title' => $province_list[$selected] . ' ' . t('City'),
+		'#title' => t('City'), //$province_list[$selected] . ' ' . t('City'),
 		'#prefix' => '<div id="cities-select-replace">',
 		'#suffix' => '</div>',
 		'#options' => _gcweather_get_cities_options($selected),
@@ -152,16 +152,23 @@ function gcweather_province_callback($form, $form_state) {
 }
 
 function gcweather_get_provinces() {
-	$cities_xml = gcweather_get_cities_file();
+	global $language;
+	/*$cities_xml = gcweather_get_cities_file();
 	
-	$provinces = array_unique($cities_xml->xpath("/siteList/site/provinceCode"));
+	$provinces = array_unique($cities_xml->xpath("/siteList/site/provinceCode"), SORT_STRING);
 	
 	$aprovinces = array();
 	foreach($provinces as $province) {
 		$aprovinces[(string)$province] = (string) $province;
-	}
+	}*/
+	$engprovinces = array("AB" => "Alberta", "BC" => "British Columbia", "MB" => "Manitoba", "NB" => "New Brunswick", "NL" => "Newfoundland and Labrador", "NT" => "Northwest Territories", "NS" => "Nova Scotia", "NU" => "Nunavut", "ON" => "Ontario", "PE" => "Prince Edward Island", "QC" => "Quebec", "SK" => "Saskatchewan", "YT" => "Yukon");
+	$fraprovinces = array("AB" => "Alberta", "BC" => "Colombie-Britannique", "PE" => utf8_encode("Île-du-Prince-Édouard"), "MB" => "Manitoba", "NB" => "Nouveau-Brunswick", "NS" => utf8_encode("Nouvelle-Écosse"), "NU" => "Nunavut", "ON" => "Ontario", "QC" => utf8_encode("Québec"), "SK" => "Saskatchewan", "NL" => "Terre-Neuve-et-Labrador", "NT" => "Territoires du Nord-Ouest", "YT" => "Yukon");
 	
-	return $aprovinces;
+	if ($language->language == 'en') {
+		return $engprovinces;
+	} else {
+		return $fraprovinces;
+	}
 }
 
 function gcweather_get_cities() {
@@ -248,42 +255,55 @@ function gcweather_ajax_callback($form, $form_state) {
 
 function gcweather_contents() {
 	// dpm(gcweather_settings('location_code'));
-		
+	global $language;	
 	$content = "";
 	
 	if($weather_xml = gcweather_get_weather_file()) {
-	
+		
 		$content = "<div id=\"gcweather-widget\">";
 		
 		// $xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/$province/$citycode" . "_" . "$lang.xml");
 		$current = $weather_xml->currentConditions;
 		// $tmpatt = $current->temperature->attributes();
 		$forecasts = $weather_xml->forecastGroup;
-		$content .= "<div class='container'><a href='#' class='settings' title='" . t("Change location") . "'><span class='ui-icon ui-icon-gear'></span><span class='wb-invisible'>" . t("Showing weather for:") . "</span><strong> " . $weather_xml->location->region . " </strong><span class='wb-invisible'>" . t("Select to change location.") . "</span></a><ul><li>";
+		$content .= "<div class='container'><span id='gcweather-settings'><span class='wb-invisible'>" . t("Showing weather for:") . "</span><strong> " . $weather_xml->location->region . " </strong><span class='wb-invisible'>" . t("Select to change location.") . "</span></span><ul><li id='frst'>";
 		if($current->iconCode != '') {
 			$content .= "<img src='/sites/all/modules/gcweather/weathericons/" . $current->iconCode . ".gif' alt='' />";
 		}
-		$content .= "<span class='description'>" . t("Current Conditions") . "<br>";
+		$content .= "<span class='description'><strong>" . t("Current Conditions") . "</strong><br>";
+		if ($current->condition != '') {			
+			$content .= $current->condition . "<br>";
+		}
 		
-		$content .= $current->condition . "<br>";
-		
-		$content .= "Temperature: " . $current->temperature . "&deg;" . $current->temperature->attributes()->units . "</span>"; // $tmpatt["units"] . "<br>";
-		//$content .= "iconCode: " . $current->iconCode;
+		if ($current->temperature != '' && $current->temperature->attributes()->units != '') {
+			$content .= t("Temperature: ") . $current->temperature . "&deg;" . $current->temperature->attributes()->units . "</span>"; // $tmpatt["units"] . "<br>";
+		}
 		$content .= "</li>";
 		foreach($forecasts->forecast as $forecast) {
 			$content .= "<li>";
-			$content .= "<img src='/sites/all/modules/gcweather/weathericons/" . $forecast->abbreviatedForecast->iconCode . ".gif' alt='' />";
-			$content .= "<span class='description'><strong>" . $forecast->period . "</strong><br>";
-			$content .= $forecast->abbreviatedForecast->textSummary ."<br>";
-			foreach($forecast->temperatures->temperature as $temperature) {
-				$content .= $temperature->attributes()->class . " ";
-				$content .= $temperature . "&deg;" . $temperature->attributes()->units . "<br />";
+			if ($forecast->abbreviatedForecast->iconCode != '') {
+				$content .= "<img src='/sites/all/modules/gcweather/weathericons/" . $forecast->abbreviatedForecast->iconCode . ".gif' alt='' />";
 			}
-			//$content .= "iconCode: " . $forecast->abbreviatedForecast->iconCode;
+			
+			if ($forecast->period != '') {
+				$content .= "<span class='description'><strong>" . $forecast->period . "</strong><br>";
+			}
+			
+			if ($forecast->abbreviatedForecast->textSummary != '') {
+				$content .= $forecast->abbreviatedForecast->textSummary ."<br>";
+			}
+			foreach($forecast->temperatures->temperature as $temperature) {
+				if ($temperature != '' && $temperature->attributes()->units != '') {
+					$content .= $temperature->attributes()->class . " ";
+					$content .= $temperature . "&deg;" . $temperature->attributes()->units . "<br />";
+				}
+			}
 			
 			$content .= "</span></li>";
 		}
-		$content .= "</ul></div></div>";
+		$content .= "</ul></div>";
+		$content .= "<noscript><style type='text/css'>#gcweather-widget .prev, #gcweather-widget .next, #gcweather-form { display: none; }</style></noscript>";
+		$content .= "<div class='navigation'><span class='prev'><a href='#'>" . t("Previous") . "</a></span><span class='next'><a href='#'>" . t("Next") . "</a></span></div></div>";
 		// $content .= "<script>gcweather_init()</script>";
 	} else {
 		$content = t("The weather service is currently unavailable");
@@ -297,7 +317,7 @@ function gcweather_block_view($delta = '') {
 	
 	switch($delta){
 		case 'gcweather':
-			$block['subject'] = t('Current Weather');
+			$block['subject'] = ''; //t('Weather');
 			if(user_access('access content')) {					
 				$block['content'] = gcweather_contents();
 				$form = drupal_get_form('gcweather_form');

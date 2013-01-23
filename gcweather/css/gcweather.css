@@ -1,16 +1,24 @@
 /* Weather Widget */
 #gcweather-widget {
+	border: 1px solid #B8B04D;
+}
+#gcweather-widget span.ui-icon-gear {
+	float: right;
+	display: block;	
 }
 #gcweather-widget .container {
 	width: 95%;
 	margin: 0px auto;
+	min-height: 107px;
 }
 #gcweather-widget ul {
 	display: block;
 	padding-left: 0px;
+	margin-left: 0px;
 }
 #gcweather-widget li {
-	list-style: none;	
+	list-style: none;
+	clear: both;
 }
 #gcweather-widget li span {
 	text-align: left;
@@ -19,6 +27,15 @@
 	height: 66px;
 	width: 80px;
 	float: right;
+}
+
+/* Form */
+#gcweather-form {
+	margin: 0px;
+	border: 1px solid #B8B04D;
+}
+#gcweather-form select {
+	max-width: 90%;
 }
 
 

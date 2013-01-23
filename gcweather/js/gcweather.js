@@ -30,15 +30,20 @@ function setSelected() {
 
 function gcweather_init() {
 	// console.log("huzzah");
-	
+	// alert("init");
 	
 	jQuery("#gcweather-widget ul li").hide();
 	jQuery("#gcweather-widget ul li:first").show().addClass('active');
-	jQuery("#gcweather-widget").append('<div class="navigation"><span class="prev"><a href="#">Previous</a></span><span class="next"><a href="#">Next</a></span></div>');
-	//jQuery("#gcweather-widget").append('<a id="next" href="#">Next</a>');
+	//jQuery("#gcweather-widget").append('<div class="navigation"><span class="prev"><a href="#">Previous</a></span><span class="next"><a href="#">Next</a></span></div>');
 	jQuery("#gcweather-widget .prev").hide();
 	jQuery("#gcweather-form").hide();
 	
+	$link = '<a href="#" class="settings">' + jQuery("#gcweather-settings strong").html() + '</a>';
+	jQuery("#gcweather-settings strong").html($link);
+	
+	// jQuery("#gcweather-settings strong").html().prepend('<a href="#" class="settings">');
+	// jQuery("#gcweather-settings strong").html().append('</a>');
+	// console.log(jQuery("#gcweather-settings strong"));
 	jQuery("#gcweather-widget .next").click(function(e) {
 		e.preventDefault();
 		if (jQuery('#gcweather-widget .active').next().length > 0) {
@@ -87,6 +92,9 @@ function gcweather_init() {
 	
 	jQuery("#gcweather-widget .settings").click( function (e) { 
 		e.preventDefault();		
+		jQuery("#gcweather-widget .container").hide();
+		jQuery("#gcweather-widget .next").hide();
+		jQuery("#gcweather-widget .prev").hide();
 		jQuery("#gcweather-form").show();
 		jQuery("#gcweather-form #edit-select-province").focus();		
 	});
@@ -110,12 +118,15 @@ function getParameterByName(data,name)
 }
 
 jQuery(document).ajaxComplete(function(evt,xhr,settings){
-	console.log(evt);
-	console.log(xhr);
-	console.log(settings);
-	console.log(getParameterByName(settings.data,"_triggering_element_name"));
+	// **** The following lines only work on Google Chrome - Troubleshooting purposes ****
+	// console.log(evt);
+	// console.log(xhr);
+	// console.log(settings);
+	// console.log(getParameterByName(settings.data,"_triggering_element_name"));
+	
 	var triggering_element = getParameterByName(settings.data,"_triggering_element_name");
-	if(triggering_element != 'select_province') {
+	
+	if(triggering_element == 'op') {
 		gcweather_init();
 	}
 });
