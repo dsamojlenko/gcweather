@@ -92,57 +92,6 @@ function gcweather_form($form, &$form_state) {
 			'wrapper' => 'gcweather-widget'
 		),
  	);
-	
-	/*	
-	$form = array();
-  
-	$cities = array(
-		'ON,s0000430' => 'Ottawa',
-		'ON,s0000531' => 'Kingston'
-	);
-  
-	$form['gcweather_select'] = array(
-  		'#title' => t('City'),
-  		'#type' => 'select',
-  		'#default_value' => gcweather_settings('location_code'),
-  		'#options' => $cities,
-  		'#description' => 'Select a City or search below',
-  		'#ajax' => array(
-  			'event' => 'change',
-  			'callback' => 'gcweather_ajax_callback',
-  			'wrapper' => 'gcweather-widget'
-		),
-	);
-	 * 
-	 */
-    
-	/*
-	$form['search_city'] = array(
-		'#title' => t('City'),
-		'#type' => 'textfield',
-		'#autocomplete_path' => 'gcweather/cities',
-		'#attributes' => array('class' => array('auto_submit')),
-		
-	);
-	 * 
-	 */
-	//'#ajax' => array(
-			
-			//'callback' => 'gcweather_ajax_callback',
-			//'wrapper' => 'gcweather-widget'
-		//),
-	
-	/*
-	$form['submit'] = array(
-		'#type' => 'submit',
-		'#value' => 'Submit',
-		'#ajax' => array(
-			'callback' => 'gcweather_ajax_callback',
-			'wrapper' => 'gcweather-widget'
-		),
-	);
-	 
-	 */
   
 	return $form;
 }
@@ -162,7 +111,7 @@ function gcweather_get_provinces() {
 		$aprovinces[(string)$province] = (string) $province;
 	}*/
 	$engprovinces = array("AB" => "Alberta", "BC" => "British Columbia", "MB" => "Manitoba", "NB" => "New Brunswick", "NL" => "Newfoundland and Labrador", "NT" => "Northwest Territories", "NS" => "Nova Scotia", "NU" => "Nunavut", "ON" => "Ontario", "PE" => "Prince Edward Island", "QC" => "Quebec", "SK" => "Saskatchewan", "YT" => "Yukon");
-	$fraprovinces = array("AB" => "Alberta", "BC" => "Colombie-Britannique", "PE" => utf8_encode("Île-du-Prince-Édouard"), "MB" => "Manitoba", "NB" => "Nouveau-Brunswick", "NS" => utf8_encode("Nouvelle-Écosse"), "NU" => "Nunavut", "ON" => "Ontario", "QC" => utf8_encode("Québec"), "SK" => "Saskatchewan", "NL" => "Terre-Neuve-et-Labrador", "NT" => "Territoires du Nord-Ouest", "YT" => "Yukon");
+	$fraprovinces = array("AB" => "Alberta", "BC" => "Colombie-Britannique", "PE" => utf8_encode("ï¿½le-du-Prince-ï¿½douard"), "MB" => "Manitoba", "NB" => "Nouveau-Brunswick", "NS" => utf8_encode("Nouvelle-ï¿½cosse"), "NU" => "Nunavut", "ON" => "Ontario", "QC" => utf8_encode("Quï¿½bec"), "SK" => "Saskatchewan", "NL" => "Terre-Neuve-et-Labrador", "NT" => "Territoires du Nord-Ouest", "YT" => "Yukon");
 	
 	if ($language->language == 'en') {
 		return $engprovinces;
@@ -209,11 +158,16 @@ function _gcweather_get_cities_options($key = '') {
   }
 }
 
-
 function gcweather_menu() {
 	$items['gcweather/cities'] = array(
 		'page callback' => '_gcweather_autocomplete',
 		'access callback' => TRUE,
+		'type' => MENU_CALLBACK
+	);
+	
+	$items['gcweather/contents'] = array(
+		'page callback' => 'gcweather_renderme',
+		'access arguments' => array('access content'),
 		'type' => MENU_CALLBACK
 	);
 	return $items;
@@ -308,6 +262,15 @@ function gcweather_contents() {
 	} else {
 		$content = t("The weather service is currently unavailable");
 	}
+	
+	return $content;
+}
+
+function gcweather_renderme() {
+	drupal_add_js(drupal_get_path('module', 'gcweather') .'/js/gcweather.js');
+	$content = gcweather_contents();
+	$form = drupal_get_form('gcweather_form');
+	$content .= drupal_render($form);
 	
 	return $content;
 }

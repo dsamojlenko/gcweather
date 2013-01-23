@@ -1,37 +1,9 @@
-function createCookie(name,value,days) {
-	if (days) {
-		var date = new Date();
-		date.setTime(date.getTime()+(days*24*60*60*1000));
-		var expires = "; expires="+date.toGMTString();
-	}
-	else var expires = "";
-	document.cookie = name+"="+value+expires+"; path=/";
-}
-
-function readCookie(name) {
-	var nameEQ = name + "=";
-	var ca = document.cookie.split(';');
-	for(var i=0;i < ca.length;i++) {
-		var c = ca[i];
-		while (c.charAt(0)==' ') c = c.substring(1,c.length);
-		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-	}
-	return null;
-}
-
-function eraseCookie(name) {
-	createCookie(name,"",-1);
-}
-
 function setSelected() {
 	var gcweather_selected = readCookie("gcweather_province_code") + "," + readCookie("gcweather_city_code");
 	jQuery("#gcweather_select").val(gcweather_selected);
 }
 
 function gcweather_init() {
-	// console.log("huzzah");
-	// alert("init");
-	
 	jQuery("#gcweather-widget ul li").hide();
 	jQuery("#gcweather-widget ul li:first").show().addClass('active');
 	//jQuery("#gcweather-widget").append('<div class="navigation"><span class="prev"><a href="#">Previous</a></span><span class="next"><a href="#">Next</a></span></div>');
@@ -41,9 +13,6 @@ function gcweather_init() {
 	$link = '<a href="#" class="settings">' + jQuery("#gcweather-settings strong").html() + '</a>';
 	jQuery("#gcweather-settings strong").html($link);
 	
-	// jQuery("#gcweather-settings strong").html().prepend('<a href="#" class="settings">');
-	// jQuery("#gcweather-settings strong").html().append('</a>');
-	// console.log(jQuery("#gcweather-settings strong"));
 	jQuery("#gcweather-widget .next").click(function(e) {
 		e.preventDefault();
 		if (jQuery('#gcweather-widget .active').next().length > 0) {
@@ -118,12 +87,6 @@ function getParameterByName(data,name)
 }
 
 jQuery(document).ajaxComplete(function(evt,xhr,settings){
-	// **** The following lines only work on Google Chrome - Troubleshooting purposes ****
-	// console.log(evt);
-	// console.log(xhr);
-	// console.log(settings);
-	// console.log(getParameterByName(settings.data,"_triggering_element_name"));
-	
 	var triggering_element = getParameterByName(settings.data,"_triggering_element_name");
 	
 	if(triggering_element == 'op') {
@@ -131,25 +94,11 @@ jQuery(document).ajaxComplete(function(evt,xhr,settings){
 	}
 });
 
-jQuery(document).on("ready", function(){
-	gcweather_init();
-});
-
-/*
-jQuery(function() {
-	
-	if(readCookie("gcweather_city_code")) {
-		setSelected();
-	}
-	
-	jQuery("#gcweather_select").live("change", function() {
-		var gcweather_code = jQuery(this).val().split(",");
-		createCookie("gcweather_city_code",gcweather_code[1],100);
-		createCookie("gcweather_province_code",gcweather_code[0],100);
-		jQuery("#gcweather-widget").load(location.href+" #gcweather-widget>*", function() {
-			setSelected();
-		});		
-	});
+jQuery("#gcweather-widget").ready(function() {
+	// console.log("widget ready");
+	// jQuery("#gcweather-widget").load("/gcweather/contents #gcweather-widget *", function() {
+		// console.log("contents loaded");
+		gcweather_init();
+	// });
 	
 });
-*/
