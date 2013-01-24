@@ -15,6 +15,11 @@ function gcweather_init() {
 	
 	jQuery("#gcweather-widget .next").click(function(e) {
 		e.preventDefault();
+		alert("bin ca entre");
+		if(jQuery("#gcweather-widget .next").is(":animated")){
+			alert("Ca passe");
+			return;
+		}
 		if (jQuery('#gcweather-widget .active').next().length > 0) {
 			var $next = jQuery('#gcweather-widget .active').next();
 			jQuery("#gcweather-widget .prev").show();
@@ -33,7 +38,6 @@ function gcweather_init() {
 				$hasNextButton = false;
 			}
 		});
-		
 	});
 	
 	jQuery("#gcweather-widget .prev").click(function(e){
