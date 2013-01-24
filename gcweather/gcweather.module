@@ -213,8 +213,8 @@ function gcweather_contents() {
 	$content = "";
 	
 	if($weather_xml = gcweather_get_weather_file()) {
-		
-		$content = "<div id=\"gcweather-widget\">";
+		$content = "<div class='ssc-block'><h2>" . t('Weather') . "</h2>";
+		$content .= "<div id=\"gcweather-widget\">";
 		
 		// $xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/$province/$citycode" . "_" . "$lang.xml");
 		$current = $weather_xml->currentConditions;
@@ -257,7 +257,7 @@ function gcweather_contents() {
 		}
 		$content .= "</ul></div>";
 		$content .= "<noscript><style type='text/css'>#gcweather-widget .prev, #gcweather-widget .next, #gcweather-form { display: none; }</style></noscript>";
-		$content .= "<div class='navigation'><span class='prev'><a href='#'>" . t("Previous") . "</a></span><span class='next'><a href='#'>" . t("Next") . "</a></span></div></div>";
+		$content .= "<div class='navigation'><span class='prev'><a href='#'>" . t("Previous") . "</a></span><span class='next'><a href='#'>" . t("Next") . "</a></span></div></div></div>";
 		// $content .= "<script>gcweather_init()</script>";
 	} else {
 		$content = t("The weather service is currently unavailable");
