@@ -15,52 +15,40 @@ function gcweather_init() {
 	
 	jQuery("#gcweather-widget .next").click(function(e) {
 		e.preventDefault();
-		alert("bin ca entre");
-		if(jQuery("#gcweather-widget .next").is(":animated")){
-			alert("Ca passe");
-			return;
-		}
-		if (jQuery('#gcweather-widget .active').next().length > 0) {
-			var $next = jQuery('#gcweather-widget .active').next();
-			jQuery("#gcweather-widget .prev").show();
-			$hasPrevButton = true;
-		} /*else {
-			var $next = jQuery("#gcweather-widget ul li").first();
-			jQuery("#prev").hide();
-		}*/
-		
-		jQuery('#gcweather-widget .active').hide("slide", {direction: "left"}, function() {
-			jQuery('#gcweather-widget .active').removeClass('active');
-			$next.addClass('active');
-			$next.show("slide", {direction: "right"});
-			if (jQuery("#gcweather-widget ul li").index(jQuery('#gcweather-widget .active')) == jQuery("#gcweather-widget ul li").length - 1) {
-				jQuery("#gcweather-widget .next").hide();
-				$hasNextButton = false;
+		if (!jQuery("#gcweather-widget ul li").is(":animated")) { //ensures that the sliding is complete before button press is allowed
+			if (jQuery('#gcweather-widget .active').next().length > 0) {
+				var $next = jQuery('#gcweather-widget .active').next();
+				jQuery("#gcweather-widget .prev").show();
 			}
-		});
+			
+			jQuery('#gcweather-widget .active').hide("slide", {direction: "left"}, function() {
+				jQuery('#gcweather-widget .active').removeClass('active');
+				$next.addClass('active');
+				$next.show("slide", {direction: "right"});
+				if (jQuery("#gcweather-widget ul li").index(jQuery('#gcweather-widget .active')) == jQuery("#gcweather-widget ul li").length - 1) {
+					jQuery("#gcweather-widget .next").hide();
+				}
+			});	
+		}
 	});
 	
 	jQuery("#gcweather-widget .prev").click(function(e){
-		e.preventDefault();
-		if (jQuery('#gcweather-widget .active').prev().length > 0) {
-			var $prev = jQuery('#gcweather-widget .active').prev();
-			jQuery("#gcweather-widget .next").show();
-			$hasNextButton = true;
-		} /*else {
-			var $prev = jQuery("#gcweather-widget ul li").last();
-			jQuery("#next").hide();
-		}*/
-		
-		jQuery('#gcweather-widget .active').hide("slide", {direction: "right"}, function() {
-			jQuery('#gcweather-widget .active').removeClass('active');
-			$prev.addClass('active');
-			$prev.show("slide", {direction: "left"});
-			if (jQuery("#gcweather-widget ul li").index(jQuery('#gcweather-widget .active')) == 0) {
-				jQuery("#gcweather-widget .prev").hide();
-				$hasPrevButton = false;
+		e.preventDefault();		
+		if (!jQuery("#gcweather-widget ul li").is(":animated")) { //ensures that the sliding is complete before button press is allowed
+			if (jQuery('#gcweather-widget .active').prev().length > 0) {
+				var $prev = jQuery('#gcweather-widget .active').prev();
+				jQuery("#gcweather-widget .next").show();
 			}
-		});
-		
+			
+			jQuery('#gcweather-widget .active').hide("slide", {direction: "right"}, function() {
+				jQuery('#gcweather-widget .active').removeClass('active');
+				$prev.addClass('active');
+				$prev.show("slide", {direction: "left"});
+				if (jQuery("#gcweather-widget ul li").index(jQuery('#gcweather-widget .active')) == 0) {
+					jQuery("#gcweather-widget .prev").hide();
+				}
+			});		
+		}		
 	});
 	
 	jQuery("#gcweather-widget .settings").click( function (e) { 

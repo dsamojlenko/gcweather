@@ -1,15 +1,14 @@
 /* Weather Widget */
 #gcweather-widget {
-	border: 1px solid #B8B04D;
+	margin: 0px;
+	padding: 0px;
 }
-#gcweather-widget span.ui-icon-gear {
-	float: right;
-	display: block;	
+#gcweather-widget .settings {
+	padding: 0px 3px;
 }
 #gcweather-widget .container {
-	width: 95%;
-	margin: 0px auto;
-	min-height: 107px;
+	min-height: 112px;
+	border: 1px solid #B8B04D;
 }
 #gcweather-widget ul {
 	display: block;
@@ -17,6 +16,7 @@
 	margin-left: 0px;
 }
 #gcweather-widget li {
+	padding: 0px 3px;
 	list-style: none;
 	clear: both;
 }

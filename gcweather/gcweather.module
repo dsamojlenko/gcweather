@@ -111,7 +111,7 @@ function gcweather_get_provinces() {
 		$aprovinces[(string)$province] = (string) $province;
 	}*/
 	$engprovinces = array("AB" => "Alberta", "BC" => "British Columbia", "MB" => "Manitoba", "NB" => "New Brunswick", "NL" => "Newfoundland and Labrador", "NT" => "Northwest Territories", "NS" => "Nova Scotia", "NU" => "Nunavut", "ON" => "Ontario", "PE" => "Prince Edward Island", "QC" => "Quebec", "SK" => "Saskatchewan", "YT" => "Yukon");
-	$fraprovinces = array("AB" => "Alberta", "BC" => "Colombie-Britannique", "PE" => utf8_encode("�le-du-Prince-�douard"), "MB" => "Manitoba", "NB" => "Nouveau-Brunswick", "NS" => utf8_encode("Nouvelle-�cosse"), "NU" => "Nunavut", "ON" => "Ontario", "QC" => utf8_encode("Qu�bec"), "SK" => "Saskatchewan", "NL" => "Terre-Neuve-et-Labrador", "NT" => "Territoires du Nord-Ouest", "YT" => "Yukon");
+	$fraprovinces = array("AB" => "Alberta", "BC" => "Colombie-Britannique", "PE" => "Île-du-Prince-Édouard", "MB" => "Manitoba", "NB" => "Nouveau-Brunswick", "NS" => "Nouvelle-Écosse", "NU" => "Nunavut", "ON" => "Ontario", "QC" => "Québec", "SK" => "Saskatchewan", "NL" => "Terre-Neuve-et-Labrador", "NT" => "Territoires du Nord-Ouest", "YT" => "Yukon");
 	
 	if ($language->language == 'en') {
 		return $engprovinces;
@@ -213,8 +213,8 @@ function gcweather_contents() {
 	$content = "";
 	
 	if($weather_xml = gcweather_get_weather_file()) {
-		$content = "<div class='ssc-block'><h2>" . t('Weather') . "</h2>";
-		$content .= "<div id=\"gcweather-widget\">";
+		$content = "<div id=\"gcweather-widget\">";
+		$content .= "<div class='ssc-block'><h2>" . t('Weather') . "</h2>";
 		
 		// $xml = simplexml_load_file("http://dd.weatheroffice.ec.gc.ca/citypage_weather/xml/$province/$citycode" . "_" . "$lang.xml");
 		$current = $weather_xml->currentConditions;
@@ -224,7 +224,9 @@ function gcweather_contents() {
 		if($current->iconCode != '') {
 			$content .= "<img src='/sites/all/modules/gcweather/weathericons/" . $current->iconCode . ".gif' alt='' />";
 		}
-		$content .= "<span class='description'><strong>" . t("Current Conditions") . "</strong><br>";
+		
+		$content .= "<span class='description'>";
+		$content .= "<strong>" . t("Current Conditions") . "</strong><br>";
 		if ($current->condition != '') {			
 			$content .= $current->condition . "<br>";
 		}
@@ -233,14 +235,32 @@ function gcweather_contents() {
 			$content .= t("Temperature: ") . $current->temperature . "&deg;" . $current->temperature->attributes()->units . "</span>"; // $tmpatt["units"] . "<br>";
 		}
 		$content .= "</li>";
-		foreach($forecasts->forecast as $forecast) {
+		
+		// set the date for the day
+		//$daysFromNow = 0;
+		foreach($forecasts->forecast as $forecast) {						
+			
+			// Verification of the date
+			/*if (!$dayNameVar) {
+				$dayNameVar = substr($forecast->period, 0, stripos($forecast->period, ' '));
+			}
+			
+			if ($dayNameVar != substr($forecast->period, 0, stripos($forecast->period, ' '))) {
+				$daysFromNow = $daysFromNow + 1;
+				$dateVar = date('Y-m-d', strtotime("+" . $daysFromNow . " days"));
+			} else {
+				$dateVar = date('Y-m-d');
+			}*/
+			
+			// Output of the actual forecast
 			$content .= "<li>";
 			if ($forecast->abbreviatedForecast->iconCode != '') {
 				$content .= "<img src='/sites/all/modules/gcweather/weathericons/" . $forecast->abbreviatedForecast->iconCode . ".gif' alt='' />";
 			}
 			
+			$content .= "<span class='description'>";
 			if ($forecast->period != '') {
-				$content .= "<span class='description'><strong>" . $forecast->period . "</strong><br>";
+				$content .= "<strong>" . $forecast->period . "</strong><br>";
 			}
 			
 			if ($forecast->abbreviatedForecast->textSummary != '') {
@@ -248,8 +268,18 @@ function gcweather_contents() {
 			}
 			foreach($forecast->temperatures->temperature as $temperature) {
 				if ($temperature != '' && $temperature->attributes()->units != '') {
-					$content .= $temperature->attributes()->class . " ";
-					$content .= $temperature . "&deg;" . $temperature->attributes()->units . "<br />";
+					switch($temperature->attributes()->class) {
+						case "low":
+							$content .= t('low');
+							break;
+						case "high":
+							$content .= t('high');
+							break;
+						default:
+							$content .= "";
+							break;
+					}
+					$content .= "&nbsp;" . $temperature . "&deg;" . $temperature->attributes()->units . "<br />";
 				}
 			}
 			
